@@ -24,7 +24,12 @@ app.use(stylus.middleware(
 ));
 app.use(express.static(__dirname + '/public'));
 
-mongoose.connect('mongodb://localhost/multivision');
+var mongooseOptions = {
+	user: 'multiAdmin',
+	pass: 'password'
+};
+
+mongoose.connect('mongodb://localhost/multivision', mongooseOptions);
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error...'));
 db.once('open', function callback() {
@@ -34,11 +39,15 @@ var messageSchema = mongoose.Schema({message: String});
 var Message = mongoose.model('Message', messageSchema);
 var mongoMessage;
 Message.findOne().exec(function(err, messageDoc) {
-	mongoMessage =  messageDoc.message;
-})
+	if (err) {
+		console.log(err.toString());
+	} else {
+		mongoMessage =  messageDoc.message;	
+	}
+});
 
 app.get('/partials/:partialPath', function (req, res) {
-	res.render('partials/' + req.params.partialPath)
+	res.render('partials/' + req.params.partialPath);
 });
 
 app.get('*', function(req, res) {
