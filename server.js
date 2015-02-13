@@ -8,61 +8,13 @@ var env = process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
 var app = express();
 
-function compile(str, path) {
-	return stylus(str).set('filename', path);
-}
+var config = require('./server/config/config')[env];
 
-app.set('views', __dirname + '/server/views');
-app.set('view engine', 'jade');
-app.use(logger('dev'));
-app.use(bodyParser());
-app.use(stylus.middleware(
-	{
-		src: __dirname + '/public',
-		compile: compile
-	}
-));
-app.use(express.static(__dirname + '/public'));
+require('./server/config/express')(app, config);
 
-var mongooseOptions = {
-	user: 'multiAdmin',
-	pass: 'password'
-};
+require('./server/config/mongoose')(config);
 
-mongoose.connect('mongodb://localhost/multivision', mongooseOptions);
-var db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error...'));
-db.once('open', function callback() {
-	console.log('multivision db opened');
-});
-<<<<<<< HEAD
+require('./server/config/routes')(app);
 
-app.get('/partials/*', function (req, res) {
-	res.render('../../public/app/' + req.params[0]);
-=======
-var messageSchema = mongoose.Schema({message: String});
-var Message = mongoose.model('Message', messageSchema);
-var mongoMessage;
-Message.findOne().exec(function(err, messageDoc) {
-	if (err) {
-		console.log(err.toString());
-	} else {
-		mongoMessage =  messageDoc.message;	
-	}
-});
-
-app.get('/partials/:partialPath', function (req, res) {
-	res.render('partials/' + req.params.partialPath);
-<<<<<<< HEAD
->>>>>>> FETCH_HEAD
-=======
->>>>>>> FETCH_HEAD
-});
-
-app.get('*', function(req, res) {
-	res.render('index');
-});
-
-var port = 8000;
-app.listen(port);
-console.log('Listening on port ' + port + '...');
+app.listen(config.port);
+console.log('Listening on port ' + config.port + '...');
